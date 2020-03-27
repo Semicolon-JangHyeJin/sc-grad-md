@@ -2,6 +2,8 @@
 
 
 // MD_CONFIG 대화 상자
+class CMFCwebnautesDlg;
+class MFC_webnautesDlg;
 
 class MD_CONFIG : public CDialogEx
 {
@@ -22,8 +24,10 @@ protected:
 	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV 지원입니다.
 
 	DECLARE_MESSAGE_MAP()
+
 public:
 	afx_msg void OnEnChangeEdit1();
 	afx_msg void OnBnClickedButton1();
 	afx_msg void OnBnClickedOk();
+	CMFCwebnautesDlg* mdlg;
 };

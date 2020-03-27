@@ -13,6 +13,7 @@
 #include <iostream>
 #include <vector>
 #include <Windows.h>
+#include "MD_CONFIG.h"
 
 using namespace cv;
 
@@ -57,4 +58,5 @@ public:
 	afx_msg void OnLvnItemchangedList1(NMHDR* pNMHDR, LRESULT* pResult);
 	CButton m_list;
 	afx_msg void OnBnClickedCancel();
+	MD_CONFIG *dlg;
 };

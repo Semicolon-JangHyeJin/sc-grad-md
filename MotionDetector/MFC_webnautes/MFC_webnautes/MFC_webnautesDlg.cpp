@@ -244,6 +244,7 @@ BOOL CMFCwebnautesDlg::OnInitDialog()
 	//m_image.Load(L"C:\\MD_Capture\\image_20191116083355.jpg");
 	myUtil_CheckDir(CapPath);
 
+
 	SetTimer(1000, 30, NULL);
 	//camera = new VideoCapture(1);
 	//if (!camera->isOpened())
@@ -537,9 +538,12 @@ void CMFCwebnautesDlg::OnBnClickedOk()
 void CMFCwebnautesDlg::OnBnClickedButton1()
 {
 	// TODO: 여기에 컨트롤 알림 처리기 코드를 추가합니다.
-	MD_CONFIG dlg;
-	dlg.DoModal(); 
-
+	//MD_CONFIG dlg;
+	//dlg.DoModal(); 
+	dlg = new MD_CONFIG(dlg);
+	dlg->Create(IDD_DIALOG1);
+	dlg->CenterWindow();
+	dlg->ShowWindow(SW_SHOWNORMAL);
 }
 
 
