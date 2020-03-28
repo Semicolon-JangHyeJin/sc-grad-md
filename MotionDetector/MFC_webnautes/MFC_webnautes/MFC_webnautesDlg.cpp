@@ -17,6 +17,8 @@
 #include <vector>
 #include <Windows.h>
 #include "MD_CONFIG.h"
+#include "MD_Calendar.h"
+#include <atlimage.h>
 
 using namespace cv;
 using namespace std;
@@ -30,6 +32,7 @@ int insert = 0;
 //몇으로 해야해..? 찾아봐야지...
 int sensor[11] = { 3000, 2800, 2600, 2400, 2200, 2000, 1800, 1600, 1400, 1200 };
 int setContour = 5;
+CString selFolderDate = _T("");
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -77,6 +80,10 @@ CString currentDate() {
 	return cbuf;
 }
 
+void CMFCwebnautesDlg::ShowImage() {
+
+}
+
 void capPicture(Mat image) {
 	if (insert == 0) {
 		//char savefile[200];
@@ -91,7 +98,6 @@ void capPicture(Mat image) {
 		imwrite(savefile, image);        // img를 파일로 저장한다.
 		insert++;
 		//putText(image, "Motion Detected", Point(10, 20), FONT_HERSHEY_SIMPLEX, 0.75, Scalar(0, 0, 255), 2);
-
 	}
 	else if (insert > 5) {
 		//char savefile[200];
@@ -148,6 +154,54 @@ END_MESSAGE_MAP()
 
 // CMFCwebnautesDlg 대화 상자
 
+void CMFCwebnautesDlg::CreateBitmapInfo(int w, int h, int bpp)
+{
+	if (m_pBitmapInfo != NULL)
+	{
+		delete[]m_pBitmapInfo;
+		m_pBitmapInfo = NULL;
+	}
+
+	if (bpp == 8)
+		m_pBitmapInfo = (BITMAPINFO*) new BYTE[sizeof(BITMAPINFO) + 255 * sizeof(RGBQUAD)];
+	else // 24 or 32bit
+		m_pBitmapInfo = (BITMAPINFO*) new BYTE[sizeof(BITMAPINFO)];
+
+	m_pBitmapInfo->bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
+	m_pBitmapInfo->bmiHeader.biPlanes = 1;
+	m_pBitmapInfo->bmiHeader.biBitCount = bpp;
+	m_pBitmapInfo->bmiHeader.biCompression = BI_RGB;
+	m_pBitmapInfo->bmiHeader.biSizeImage = 0;
+	m_pBitmapInfo->bmiHeader.biXPelsPerMeter = 0;
+	m_pBitmapInfo->bmiHeader.biYPelsPerMeter = 0;
+	m_pBitmapInfo->bmiHeader.biClrUsed = 0;
+	m_pBitmapInfo->bmiHeader.biClrImportant = 0;
+
+	if (bpp == 8)
+	{
+		for (int i = 0; i < 256; i++)
+		{
+			m_pBitmapInfo->bmiColors[i].rgbBlue = (BYTE)i;
+			m_pBitmapInfo->bmiColors[i].rgbGreen = (BYTE)i;
+			m_pBitmapInfo->bmiColors[i].rgbRed = (BYTE)i;
+			m_pBitmapInfo->bmiColors[i].rgbReserved = 0;
+		}
+	}
+
+	m_pBitmapInfo->bmiHeader.biWidth = w;
+	m_pBitmapInfo->bmiHeader.biHeight = -h;
+}
+
+void CMFCwebnautesDlg::DrawImage()
+{
+	CClientDC dc(GetDlgItem(IDC_LIST1));
+
+	CRect rect;
+	GetDlgItem(IDC_LIST1)->GetClientRect(&rect);
+
+	SetStretchBltMode(dc.GetSafeHdc(), COLORONCOLOR);
+	StretchDIBits(dc.GetSafeHdc(), 0, 0, rect.Width(), rect.Height(), 0, 0, m_matImage.cols, m_matImage.rows, m_matImage.data, m_pBitmapInfo, DIB_RGB_COLORS, SRCCOPY);
+}
 
 
 CMFCwebnautesDlg::CMFCwebnautesDlg(CWnd* pParent /*=nullptr*/)
@@ -163,6 +217,7 @@ void CMFCwebnautesDlg::DoDataExchange(CDataExchange* pDX)
 	DDX_Control(pDX, IDC_SLIDER1, m_sld);
 	DDX_Control(pDX, IDC_EDIT1, m_ed);
 	DDX_Control(pDX, IDCANCEL, m_list);
+	DDX_Control(pDX, IDC_LIST1, m_piclist);
 }
 
 BEGIN_MESSAGE_MAP(CMFCwebnautesDlg, CDialogEx)
@@ -244,6 +299,28 @@ BOOL CMFCwebnautesDlg::OnInitDialog()
 	//m_image.Load(L"C:\\MD_Capture\\image_20191116083355.jpg");
 	myUtil_CheckDir(CapPath);
 
+	//이미지 리스트 초기화
+	//CImageList* pImageList = new CImageList;
+	//CClientDC dc(this);
+	//CImage img;
+	//img.Load(_T("C:\\MD_Capture\\20200328\\image_20200328093342.jpg"));
+	//img.BitBlt(dc.m_hDC, 0, 0);
+
+	CImageList m_img;
+	m_img.DeleteImageList();
+	m_img.Create(32, 32, ILC_MASK | ILC_COLORDDB, 10, 10);
+
+	CString str = _T("C:\\MD_Capture\\20200328\\image_20200328093342.jpg");
+	HBITMAP hbitmap = NULL;
+	hbitmap = (HBITMAP)LoadImage(::AfxGetApp()->m_hInstance, str, IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE | LR_CREATEDIBSECTION | LR_DEFAULTSIZE);
+	CBitmap bmp;
+	bmp.Attach(hbitmap);
+
+	m_img.Add(&bmp, RGB(192, 192, 192));
+	bmp.DeleteObject();
+	if (hbitmap) DeleteObject(hbitmap);
+
+	m_piclist.SetImageList(&m_img, LVSIL_NORMAL);	
 
 	SetTimer(1000, 30, NULL);
 	//camera = new VideoCapture(1);
@@ -550,7 +627,12 @@ void CMFCwebnautesDlg::OnBnClickedButton1()
 void CMFCwebnautesDlg::OnBnClickedButton2()
 {
 	// TODO: 여기에 컨트롤 알림 처리기 코드를 추가합니다.
-	ShellExecute(NULL, _T("open"), CapPath, NULL, NULL, SW_SHOW); 
+	//달력 이용할 시,
+	//cdlg = new MD_Calendar(cdlg);
+	//cdlg->Create(IDD_DIALOG2);
+	//cdlg->CenterWindow();
+	//cdlg->ShowWindow(SW_SHOWNORMAL);
+	ShellExecute(NULL, _T("open"), CapPath, NULL, NULL, SW_SHOW);
 }
 
 

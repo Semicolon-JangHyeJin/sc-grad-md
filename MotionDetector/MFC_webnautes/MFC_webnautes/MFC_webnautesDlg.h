@@ -14,6 +14,7 @@
 #include <vector>
 #include <Windows.h>
 #include "MD_CONFIG.h"
+#include "MD_Calendar.h"
 
 using namespace cv;
 
@@ -59,4 +60,13 @@ public:
 	CButton m_list;
 	afx_msg void OnBnClickedCancel();
 	MD_CONFIG *dlg;
+	MD_Calendar *cdlg;
+	CListCtrl m_piclist;
+	void ShowImage();
+
+	Mat m_matImage; // 이미지 정보를 담고 있는 객체.
+	BITMAPINFO* m_pBitmapInfo; // Bitmap 정보를 담고 있는 구조체.
+
+	void CreateBitmapInfo(int w, int h, int bpp); // Bitmap 정보를 생성하는 함수.
+	void DrawImage(); // 그리는 작업을 수행하는 함수.
 };

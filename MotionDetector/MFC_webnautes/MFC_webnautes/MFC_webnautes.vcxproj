@@ -190,6 +190,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="framework.h" />
+    <ClInclude Include="MD_Calendar.h" />
     <ClInclude Include="MD_CONFIG.h" />
     <ClInclude Include="MFC_webnautes.h" />
     <ClInclude Include="MFC_webnautesDlg.h" />
@@ -198,6 +199,7 @@
     <ClInclude Include="targetver.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="MD_Calendar.cpp" />
     <ClCompile Include="MD_CONFIG.cpp" />
     <ClCompile Include="MFC_webnautes.cpp" />
     <ClCompile Include="MFC_webnautesDlg.cpp" />
