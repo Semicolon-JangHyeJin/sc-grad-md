@@ -15,6 +15,22 @@
 #include <Windows.h>
 #include "MD_CONFIG.h"
 #include "MD_Calendar.h"
+#include "pch.h"
+#include "framework.h"
+#include "MFC_webnautes.h"
+#include "MFC_webnautesDlg.h"
+#include "afxdialogex.h"
+#include <time.h>
+#include <iostream>
+#include <vector>
+#include <Windows.h>
+#include "MD_CONFIG.h"
+#include "MD_Calendar.h"
+#include <atlimage.h>
+
+//(original height / original width) x new width = new height 
+#define	THUMBNAIL_WIDTH		90		// thubmail 이미지 크기 640
+#define	THUMBNAIL_HEIGHT	67		// thubmail 이미지 크기 480
 
 using namespace cv;
 
@@ -62,11 +78,15 @@ public:
 	MD_CONFIG *dlg;
 	MD_Calendar *cdlg;
 	CListCtrl m_piclist;
-	void ShowImage();
-
-	Mat m_matImage; // 이미지 정보를 담고 있는 객체.
-	BITMAPINFO* m_pBitmapInfo; // Bitmap 정보를 담고 있는 구조체.
-
-	void CreateBitmapInfo(int w, int h, int bpp); // Bitmap 정보를 생성하는 함수.
-	void DrawImage(); // 그리는 작업을 수행하는 함수.
+	CImageList mImageList;		// 사진 리스트에 같에 사용할 image list
+	void SaveDetectImage();										// 사진 저장
+	void InsertList(Mat thumb, CString FileName);			// 리스트에 thumbnail 넣기
+	void ShowThumbnailList();									// list control 에 사진 thumbnail 보여줌
+	void AddThumbnailList(CString FileName, Mat image);	// list control 에 thumbnail 추가
+	void removeAllImages();										// mPath 에 저장된 모든 사진 삭제
+	UINT nIndex;				// 사진 리스트에 사용되는 list control 과 image list 의 index
+	void capPicture(Mat image);
+	HBITMAP mat2bmp(cv::Mat* image);
+	void Running();
+	afx_msg void OnNMDblclkList1(NMHDR* pNMHDR, LRESULT* pResult);
 };

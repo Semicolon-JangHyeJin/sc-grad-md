@@ -39,7 +39,7 @@ BOOL CheckOpenDir(CString sDirName, CString path)
 	CFileFind file;
 	CString strFile = _T("*.*");
 	BOOL bResult = file.FindFile(sDirName + strFile);
-	printf("%s", sDirName);
+	//printf("%s", sDirName);
 	if (!bResult)
 	{
 		ShellExecute(NULL, _T("open"), path, NULL, NULL, SW_SHOW);
