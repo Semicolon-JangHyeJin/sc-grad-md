@@ -847,7 +847,12 @@ void CMFCwebnautesDlg::OnNMDblclkList1(NMHDR* pNMHDR, LRESULT* pResult)
 		CString tempPath = (CapPath + "\\" + currentDate() + "\\");
 		CString strFullPath = tempPath + m_piclist.GetItemText(pNMItemActivate->iItem, 0);
 
-		CImage tempImg;
+		CString strViewerPath = _T("\"C:\\Program Files\\Windows Photo Viewer\\PhotoViewer.dll\", ImageView_Fullscreen  ");
+		strViewerPath += tempPath;
+
+		ShellExecute(NULL, _T("open"), _T("Rundll32.exe"), strViewerPath, NULL, SW_SHOW);
+
+		/*CImage tempImg;
 		CWnd* pWnd = (CWnd*)GetDlgItem(IDC_PICTURE);
 		CDC* dc = pWnd->GetDC();
 		CStatic* staticSize = (CStatic*)GetDlgItem(IDC_PICTURE);
@@ -855,7 +860,7 @@ void CMFCwebnautesDlg::OnNMDblclkList1(NMHDR* pNMHDR, LRESULT* pResult)
 
 		staticSize->GetClientRect(rect);
 		tempImg.Load(strFullPath);
-		tempImg.Draw(dc->m_hDC, 0, 0, tempImg.GetWidth(), tempImg.GetHeight());
+		tempImg.Draw(dc->m_hDC, 0, 0, tempImg.GetWidth(), tempImg.GetHeight());*/
 		
 	}
 
