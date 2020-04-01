@@ -8,6 +8,7 @@
 #include "MFC_webnautesDlg.h"
 
 // MD_Calendar 대화 상자
+extern CString FolderPath;
 
 IMPLEMENT_DYNAMIC(MD_Calendar, CDialogEx)
 
@@ -31,6 +32,7 @@ void MD_Calendar::DoDataExchange(CDataExchange* pDX)
 
 BEGIN_MESSAGE_MAP(MD_Calendar, CDialogEx)
 	ON_BN_CLICKED(IDOK, &MD_Calendar::OnBnClickedOk)
+	ON_NOTIFY(MCN_SELCHANGE, IDC_MONTHCALENDAR1, &MD_Calendar::OnMcnSelchangeMonthcalendar1)
 END_MESSAGE_MAP()
 
 
@@ -39,10 +41,14 @@ BOOL CheckOpenDir(CString sDirName, CString path)
 	CFileFind file;
 	CString strFile = _T("*.*");
 	BOOL bResult = file.FindFile(sDirName + strFile);
+	CString msg = _T("선택된 날짜에 찍힌 사진이 없습니다.");
 	//printf("%s", sDirName);
 	if (!bResult)
 	{
-		ShellExecute(NULL, _T("open"), path, NULL, NULL, SW_SHOW);
+		//ShellExecute(NULL, _T("open"), path, NULL, NULL, SW_SHOW);
+		FolderPath = path;
+	
+		AfxMessageBox(msg);
 		if (!bResult)
 		{
 			/*Error*/
@@ -51,7 +57,8 @@ BOOL CheckOpenDir(CString sDirName, CString path)
 		return TRUE;
 	}
 	else {
-		ShellExecute(NULL, _T("open"), sDirName, NULL, NULL, SW_SHOW);
+		//ShellExecute(NULL, _T("open"), sDirName, NULL, NULL, SW_SHOW);
+		FolderPath = sDirName;
 	}
 	return FALSE;
 }
@@ -71,4 +78,12 @@ void MD_Calendar::OnBnClickedOk()
 	//AfxMessageBox(path);
 	CheckOpenDir(path, CapPath);
 	UpdateData(false);
+}
+
+
+void MD_Calendar::OnMcnSelchangeMonthcalendar1(NMHDR* pNMHDR, LRESULT* pResult)
+{
+	LPNMSELCHANGE pSelChange = reinterpret_cast<LPNMSELCHANGE>(pNMHDR);
+	// TODO: 여기에 컨트롤 알림 처리기 코드를 추가합니다.
+	*pResult = 0;
 }

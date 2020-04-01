@@ -20,23 +20,28 @@
 #include "MD_Calendar.h"
 #include <atlimage.h>
 
+#include <CkHttp.h>
+/*
+AWS S3 서버와 MFC 연동 예제
+https://www.example-code.com/mfc/s3.asp
+*/
+
 using namespace cv;
 using namespace std;
 
+//전역변수 선언부
 VideoCapture* capture;
-Mat mat_frame;
-CImage cimage_mfc;
-CString CapPath = _T("C:\\MD_Capture");
-CImage m_image;
-
-Mat frame, gray, frameDelta, thresh, firstFrame;
 vector<vector<Point> > cnts;
-
-int insert = 0;
-//몇으로 해야해..? 찾아봐야지...
-int sensor[11] = { 3000, 2800, 2600, 2400, 2200, 2000, 1800, 1600, 1400, 1200 };
-int setContour = 5;
+Mat frame, gray, frameDelta, thresh, firstFrame;
+Mat mat_frame;
+CString CapPath = _T("C:\\MD_Capture");
 CString selFolderDate = _T("");
+CString FolderPath = _T("");
+CImage cimage_mfc;
+CImage m_image;
+int setContour = 5;
+int insert = 0;
+int sensor[11] = { 3000, 2800, 2600, 2400, 2200, 2000, 1800, 1600, 1400, 1200 };
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -68,30 +73,21 @@ CString currentDateTime() {
 	char       buf[80];
 	CString cbuf = _T("");
 	tstruct = *localtime(&now);
-	strftime(buf, sizeof(buf), "%Y%m%d%H%M%S", &tstruct); // YYYY-MM-DD.HH:mm:ss 형태의 스트링
+	strftime(buf, sizeof(buf), "%Y%m%d%H%M%S", &tstruct); // YYYYMMDDHHmmss 형태의 스트링
 	cbuf = LPSTR(buf);
 	return cbuf;
 }
 
-CString currentDate() {
+CString CMFCwebnautesDlg::currentDate() {
 	time_t     now = time(0); //현재 시간을 time_t 타입으로 저장
 	struct tm  tstruct;
 	char       buf[80];
 	CString cbuf = _T("");
 	tstruct = *localtime(&now);
-	strftime(buf, sizeof(buf), "%Y%m%d", &tstruct); // YYYY-MM-DD.HH:mm:ss 형태의 스트링
+	strftime(buf, sizeof(buf), "%Y%m%d", &tstruct); // YYYYMMDD 형태의 스트링
 	cbuf = LPSTR(buf);
 	return cbuf;
 }
-
-//BOOL AddImage(LPCTSTR filename, CImageList& imagelist)
-//{
-//	CBitmap Bmp;
-//	Bmp.Attach((HBITMAP)::LoadImage(NULL, filename, IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE));
-//	if ((HBITMAP)Bmp == NULL)
-//		return FALSE;
-//	imagelist.Add(&Bmp, RGB(255, 255, 255));
-//}
 
 void CMFCwebnautesDlg::capPicture(Mat image) {
 	if (insert == 0) {
@@ -246,6 +242,7 @@ BEGIN_MESSAGE_MAP(CMFCwebnautesDlg, CDialogEx)
 	ON_EN_CHANGE(IDC_EDIT1, &CMFCwebnautesDlg::OnEnChangeEdit1)
 	ON_NOTIFY(LVN_ITEMCHANGED, IDC_LIST1, &CMFCwebnautesDlg::OnLvnItemchangedList1)
 	ON_NOTIFY(NM_DBLCLK, IDC_LIST1, &CMFCwebnautesDlg::OnNMDblclkList1)
+	ON_BN_CLICKED(IDC_BUTTON3, &CMFCwebnautesDlg::OnBnClickedButton3)
 END_MESSAGE_MAP()
 
 
@@ -312,8 +309,9 @@ BOOL CMFCwebnautesDlg::OnInitDialog()
 	//m_image.Load(L"C:\\MD_Capture\\image_20191116083355.jpg");
 	myUtil_CheckDir(CapPath);
 
-	//이미지 리스트 초기화
-	//ShowImage();
+	//폴더 선택 저장 변수
+	FolderPath = _T("C:\\MD_Capture\\" + currentDate());
+
 	// imagelist 생성 및 list control 과 연결
 	mImageList.Create(64, 64, ILC_COLOR8 | ILC_MASK, 8, 8);
 	m_piclist.SetImageList(&mImageList, LVSIL_NORMAL);
@@ -576,12 +574,17 @@ void CMFCwebnautesDlg::OnBnClickedButton1()
 void CMFCwebnautesDlg::OnBnClickedButton2()
 {
 	// TODO: 여기에 컨트롤 알림 처리기 코드를 추가합니다.
-	//달력 이용할 시,
-	//cdlg = new MD_Calendar(cdlg);
-	//cdlg->Create(IDD_DIALOG2);
-	//cdlg->CenterWindow();
-	//cdlg->ShowWindow(SW_SHOWNORMAL);
-	ShellExecute(NULL, _T("open"), CapPath, NULL, NULL, SW_SHOW);
+	ShellExecute(NULL, _T("open"), FolderPath, NULL, NULL, SW_SHOW);
+}
+
+void CMFCwebnautesDlg::OnBnClickedButton3()
+{
+	// TODO: 여기에 컨트롤 알림 처리기 코드를 추가합니다.
+	cdlg = new MD_Calendar(cdlg);
+	cdlg->Create(IDD_DIALOG2);
+	cdlg->CenterWindow();
+	cdlg->ShowWindow(SW_SHOWNORMAL);
+	//AfxMessageBox(FolderPath);
 }
 
 
@@ -656,72 +659,6 @@ void CMFCwebnautesDlg::ShowThumbnailList() {
 		//if (image != NULL) cvReleaseImage(&image); // thumbnail release
 	}
 }
-
-//void CMFCwebnautesDlg::SaveDetectImage() {
-//	// 파일의 이름은 현재 시간을 참고하여 생성한다.
-//	SYSTEMTIME st;
-//	GetLocalTime(&st);
-//
-//
-//	/*CString strVolDrive, strFree;
-//	AfxExtractSubString(strVolDrive, mPath, 0, '\\');
-//	int free = GetFreeSpaceOfDrive(strVolDrive+'\\');
-//	strFree.Format(L"%d", free);
-//	AfxMessageBox(strFree);*/
-//
-//	CString strFileName, strFullPath;
-//	strFileName.Format(L"cam-%02d%02d%02d-%02d%02d%02d.jpg",
-//		st.wYear - 2000, st.wMonth, st.wDay,
-//		st.wHour, st.wMinute, st.wSecond);
-//	strFullPath = CapPath + strFileName;
-//
-//	// OpenCV 함수를 이용하여 jpeg 파일 포맷으로 저장한다.
-//	//IplImage* saveImage = cvCreateImage(cvSize(SAVED_WIDTH, SAVED_HEIGHT), IPL_DEPTH_8U, 3);
-//	Mat saveImage = Mat(Size(THUMBNAIL_WIDTH, THUMBNAIL_HEIGHT), CV_8UC3);
-//	resize(currentImage, saveImage,Size(THUMBNAIL_WIDTH, THUMBNAIL_HEIGHT), 0, 0, INTER_LINEAR);
-//	cvSaveImage(CT2A(strFullPath), saveImage);
-//	if (saveImage != NULL) cvReleaseImage(&saveImage);
-//
-//	// 섬네일 리스트 표시
-//	ShowThumbnailList();
-//}
-
-//HBITMAP CMFCwebnautesDlg::Mat2DIB(Mat* Image)
-//{
-//	HBITMAP hbmp = NULL;
-//	int bpp = Image->channels() * 8;
-//
-//	Mat tmp;
-//	cvtColor(*Image, tmp, CV_GRAY2BGR);
-//
-//	BITMAPINFO bmpInfo = { 0 };
-//	LONG lBmpSize = Image->rows * Image->cols * 3;
-//	bmpInfo.bmiHeader.biBitCount = bpp;
-//	bmpInfo.bmiHeader.biHeight = Image->rows;
-//	bmpInfo.bmiHeader.biWidth = Image->cols;
-//	bmpInfo.bmiHeader.biPlanes = 1;
-//	bmpInfo.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
-//	// Pointer to access the pixels of bitmap
-//	BYTE* pPixels = 0, * pP;
-//	hbmp = CreateDIBSection(NULL, (BITMAPINFO*)&bmpInfo, DIB_RGB_COLORS, (void**)&pPixels, NULL, 0);
-//
-//	if (!hbmp)
-//		return hbmp; // return if invalid bitmaps
-//
-//	   //SetBitmapBits( hBitmap, lBmpSize, pBits);
-//	   // Directly Write
-//	int left_width = ((bpp * Image->cols + 31) / 32) * 4;
-//	pP = pPixels;
-//	for (int y = Image->rows - 1, row = 0; row < Image->rows; row++, y--) {
-//		for (int x = 0, col = 0; col < Image->cols; x += 3, col++) {
-//			pP[x] = tmp.at<Vec3b>(y, col).val[0];
-//			pP[x + 1] = tmp.at<Vec3b>(y, col).val[1];
-//			pP[x + 2] = tmp.at<Vec3b>(y, col).val[2];
-//		}
-//		pP += left_width;
-//	}
-//	return hbmp;
-//}
 
 HBITMAP CMFCwebnautesDlg::mat2bmp(cv::Mat* image)
 {
@@ -848,20 +785,9 @@ void CMFCwebnautesDlg::OnNMDblclkList1(NMHDR* pNMHDR, LRESULT* pResult)
 		CString strFullPath = tempPath + m_piclist.GetItemText(pNMItemActivate->iItem, 0);
 
 		CString strViewerPath = _T("\"C:\\Program Files\\Windows Photo Viewer\\PhotoViewer.dll\", ImageView_Fullscreen  ");
-		strViewerPath += tempPath;
+		strViewerPath += strFullPath;
 
 		ShellExecute(NULL, _T("open"), _T("Rundll32.exe"), strViewerPath, NULL, SW_SHOW);
-
-		/*CImage tempImg;
-		CWnd* pWnd = (CWnd*)GetDlgItem(IDC_PICTURE);
-		CDC* dc = pWnd->GetDC();
-		CStatic* staticSize = (CStatic*)GetDlgItem(IDC_PICTURE);
-		CRect rect;
-
-		staticSize->GetClientRect(rect);
-		tempImg.Load(strFullPath);
-		tempImg.Draw(dc->m_hDC, 0, 0, tempImg.GetWidth(), tempImg.GetHeight());*/
-		
 	}
 
 	*pResult = 0;

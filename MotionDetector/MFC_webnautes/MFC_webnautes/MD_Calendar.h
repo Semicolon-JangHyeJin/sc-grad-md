@@ -25,4 +25,5 @@ protected:
 public:
 	afx_msg void OnBnClickedOk();
 	COleDateTime m_time;
+	afx_msg void OnMcnSelchangeMonthcalendar1(NMHDR* pNMHDR, LRESULT* pResult);
 };

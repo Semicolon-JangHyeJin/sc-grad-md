@@ -89,4 +89,6 @@ public:
 	HBITMAP mat2bmp(cv::Mat* image);
 	void Running();
 	afx_msg void OnNMDblclkList1(NMHDR* pNMHDR, LRESULT* pResult);
+	afx_msg void OnBnClickedButton3();
+	CString currentDate();
 };
