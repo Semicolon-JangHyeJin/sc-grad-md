@@ -42,7 +42,7 @@ BOOL CheckOpenDir(CString sDirName, CString path)
 	CString strFile = _T("*.*");
 	BOOL bResult = file.FindFile(sDirName + strFile);
 	CString msg = _T("선택된 날짜에 찍힌 사진이 없습니다.");
-	//printf("%s", sDirName);
+
 	if (!bResult)
 	{
 		//ShellExecute(NULL, _T("open"), path, NULL, NULL, SW_SHOW);
@@ -75,7 +75,7 @@ void MD_Calendar::OnBnClickedOk()
 	extern CString CapPath;
 	selFolderDate.Format(_T("%04d%02d%02d"), m_time.GetYear(), m_time.GetMonth(), m_time.GetDay());
 	CString path = CapPath + "\\" + selFolderDate;
-	//AfxMessageBox(path);
+	//AfxMessageBox(path); // 경로 확인하는 용도
 	CheckOpenDir(path, CapPath);
 	UpdateData(false);
 }

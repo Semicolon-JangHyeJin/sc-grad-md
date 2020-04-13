@@ -60,35 +60,38 @@ protected:
 	afx_msg void OnPaint();
 	afx_msg HCURSOR OnQueryDragIcon();
 	DECLARE_MESSAGE_MAP()
+
 public:
 	afx_msg void OnStnClickedPicture();
-	CStatic m_picture;
 	afx_msg void OnDestroy();
 	afx_msg void OnTimer(UINT_PTR nIDEvent);
 	afx_msg void OnNMCustomdrawSlider1(NMHDR* pNMHDR, LRESULT* pResult);
 	afx_msg void OnBnClickedOk();
 	afx_msg void OnBnClickedButton1();
 	afx_msg void OnBnClickedButton2();
-	CSliderCtrl m_sld;
-	CEdit m_ed;
 	afx_msg void OnEnChangeEdit1();
 	afx_msg void OnLvnItemchangedList1(NMHDR* pNMHDR, LRESULT* pResult);
-	CButton m_list;
 	afx_msg void OnBnClickedCancel();
-	MD_CONFIG *dlg;
-	MD_Calendar *cdlg;
-	CListCtrl m_piclist;
-	CImageList mImageList;		// 사진 리스트에 같에 사용할 image list
+	afx_msg void OnNMDblclkList1(NMHDR* pNMHDR, LRESULT* pResult);
+	afx_msg void OnBnClickedButton3();
+
 	void SaveDetectImage();										// 사진 저장
 	void InsertList(Mat thumb, CString FileName);			// 리스트에 thumbnail 넣기
 	void ShowThumbnailList();									// list control 에 사진 thumbnail 보여줌
 	void AddThumbnailList(CString FileName, Mat image);	// list control 에 thumbnail 추가
 	void removeAllImages();										// mPath 에 저장된 모든 사진 삭제
-	UINT nIndex;				// 사진 리스트에 사용되는 list control 과 image list 의 index
 	void capPicture(Mat image);
-	HBITMAP mat2bmp(cv::Mat* image);
 	void Running();
-	afx_msg void OnNMDblclkList1(NMHDR* pNMHDR, LRESULT* pResult);
-	afx_msg void OnBnClickedButton3();
 	CString currentDate();
+	HBITMAP mat2bmp(cv::Mat* image);
+
+	UINT nIndex;				// 사진 리스트에 사용되는 list control 과 image list 의 index
+	CListCtrl m_piclist;
+	CSliderCtrl m_sld;
+	CImageList mImageList;		// 사진 리스트에 같에 사용할 image list
+	CStatic m_picture;
+	CButton m_list;
+	CEdit m_ed;
+	MD_CONFIG *dlg;
+	MD_Calendar *cdlg;
 };

@@ -1,6 +1,5 @@
 ﻿
 // MFC_webnautesDlg.cpp: 구현 파일
-//
 #pragma warning(disable:4996)
 
 #include "pch.h"
@@ -91,34 +90,24 @@ CString CMFCwebnautesDlg::currentDate() {
 
 void CMFCwebnautesDlg::capPicture(Mat image) {
 	if (insert == 0) {
-		//char savefile[200];
 		CString tempDate = currentDate();
 		CString tempfile = CapPath + "\\" + tempDate + "\\image_" + currentDateTime() + ".jpg";
 		string savefile = CT2CA(tempfile);
 		CString tempDir = CapPath + "\\" + tempDate;
 		myUtil_CheckDir(tempDir);
-		//string savefile = CapPath + "\\image_" + currentDateTime() + ".jpg";
-		//sprintf(savefile, "image_%d.jpg", currentDateTime());
-		//printf("cap %s\n", savefile);
 		imwrite(savefile, image);        // img를 파일로 저장한다.
 		insert++;
 		ShowThumbnailList();
-		//putText(image, "Motion Detected", Point(10, 20), FONT_HERSHEY_SIMPLEX, 0.75, Scalar(0, 0, 255), 2);
 	}
 	else if (insert > 50) {
-		//char savefile[200];
 		CString tempDate = currentDate();
 		CString tempfile = CapPath + "\\" + tempDate + "\\image_" + currentDateTime() + ".jpg";
 		string savefile = CT2CA(tempfile);
 		CString tempDir = CapPath + "\\" + tempDate;
 		myUtil_CheckDir(tempDir);
-		//string savefile = "image_" + currentDateTime() + ".jpg";
-		//sprintf(savefile, "image_%d.jpg", currentDateTime());
 		imwrite(savefile, image);        // img를 파일로 저장한다.
-		//printf("cap %s\n", savefile);
 		insert = 0;
 		ShowThumbnailList();
-		//putText(image, "Motion Detected", Point(10, 20), FONT_HERSHEY_SIMPLEX, 0.75, Scalar(0, 0, 255), 2);
 	}
 	else {
 		insert++;
@@ -128,24 +117,21 @@ void CMFCwebnautesDlg::capPicture(Mat image) {
 
 void CMFCwebnautesDlg::Running() {
 	//Motion Detection 부분
-
-
 	int v = 0;
 
-	//sleep(3);
-
 	capture->read(frame);
-	//convert to grayscale and set the first frame
+
+	//첫 프레임과 현재 프레임의 차이 계산
 	cvtColor(frame, firstFrame, COLOR_BGR2GRAY);
 	GaussianBlur(firstFrame, firstFrame, Size(21, 21), 0);
 
 	while (capture->read(frame)) {
 
-		//convert to grayscale
+		//grayscale로 변환
 		cvtColor(frame, gray, COLOR_BGR2GRAY);
 		GaussianBlur(gray, gray, Size(21, 21), 0);
 
-		//compute difference between first frame and current frame
+		//전 프레임과 현재 프레임의 차이 계산
 		absdiff(firstFrame, gray, frameDelta);
 		threshold(frameDelta, thresh, 25, 255, THRESH_BINARY);
 
@@ -159,19 +145,13 @@ void CMFCwebnautesDlg::Running() {
 			capPicture(frame);
 		}
 
-		//imshow("capture", frame);
-		//camera.read(frame);
 		Sleep(50);
-		//convert to grayscale and set the first frame
-		//v++;
-		//if (v > 10) {
+
 		cvtColor(frame, firstFrame, COLOR_BGR2GRAY);
 		GaussianBlur(firstFrame, firstFrame, Size(21, 21), 0);
-		//v = 0;
-	//}
+
 		if (waitKey(1) == 27) {
-			//exit if ESC is pressed
-			//break;
+			//해당 if문이 없으면 에러가 떠서 아무 기능이 없지만 추가해둠.
 		}
 
 	}
@@ -301,35 +281,19 @@ BOOL CMFCwebnautesDlg::OnInitDialog()
 	sPos.Format(_T("%d"), iPos);
 	m_ed.SetWindowText(sPos);
 
-	//웹캠 크기를  320x240으로 지정    
-	/*capture->set(CAP_PROP_FRAME_WIDTH, 320);
-	capture->set(CAP_PROP_FRAME_HEIGHT, 240);*/
-
-	//이미지 로드
-	//m_image.Load(L"C:\\MD_Capture\\image_20191116083355.jpg");
+	//이미지 저장 폴더 있는지 확인
 	myUtil_CheckDir(CapPath);
 
 	//폴더 선택 저장 변수
 	FolderPath = _T("C:\\MD_Capture\\" + currentDate());
 
-	// imagelist 생성 및 list control 과 연결
+	//imagelist 생성 및 list control과 연결
 	mImageList.Create(64, 64, ILC_COLOR8 | ILC_MASK, 8, 8);
 	m_piclist.SetImageList(&mImageList, LVSIL_NORMAL);
-
 	ShowThumbnailList();
+	
 	SetTimer(1000, 1000 / 15, NULL);
 	
-	//camera = new VideoCapture(1);
-	//if (!camera->isOpened())
-	//{
-	//	MessageBox(_T("캠을 열수 없습니다. \n"));
-	//}
-
-	////웹캠 크기를  320x240으로 지정    
-	//camera->set(CAP_PROP_FRAME_WIDTH, 320);
-	//camera->set(CAP_PROP_FRAME_HEIGHT, 240);
-
-	//SetTimer(1000, 30, NULL);
 	return TRUE;  // 포커스를 컨트롤에 설정하지 않으면 TRUE를 반환합니다.
 }
 
@@ -404,17 +368,12 @@ void CMFCwebnautesDlg::OnTimer(UINT_PTR nIDEvent)
 	// TODO: 여기에 메시지 처리기 코드를 추가 및/또는 기본값을 호출합니다.
 	//sleep(3);
 
-		  //mat_frame가 입력 이미지입니다. 
+	//mat_frame가 입력 이미지입니다.
 	capture->read(mat_frame);
 
 
 	//이곳에 OpenCV 함수들을 적용합니다.
-
-	//여기에서는 그레이스케일 이미지로 변환합니다.
-	//cvtColor(mat_frame, mat_frame, COLOR_BGR2GRAY);
-
-
-
+	
 	//화면에 보여주기 위한 처리입니다.
 	int bpp = 8 * mat_frame.elemSize();
 	assert((bpp == 8 || bpp == 24 || bpp == 32));
@@ -434,8 +393,6 @@ void CMFCwebnautesDlg::OnTimer(UINT_PTR nIDEvent)
 		border = 4 - (mat_frame.cols % 4);
 	}
 
-
-
 	Mat mat_temp;
 	if (border > 0 || mat_frame.isContinuous() == false)
 	{
@@ -447,13 +404,11 @@ void CMFCwebnautesDlg::OnTimer(UINT_PTR nIDEvent)
 		mat_temp = mat_frame;
 	}
 
-
 	RECT r;
 	m_picture.GetClientRect(&r);
 	cv::Size winSize(r.right, r.bottom);
 
 	cimage_mfc.Create(winSize.width, winSize.height, 24);
-
 
 	BITMAPINFO* bitInfo = (BITMAPINFO*)malloc(sizeof(BITMAPINFO) + 256 * sizeof(RGBQUAD));
 	bitInfo->bmiHeader.biBitCount = bpp;
@@ -468,7 +423,6 @@ void CMFCwebnautesDlg::OnTimer(UINT_PTR nIDEvent)
 	bitInfo->bmiHeader.biXPelsPerMeter = 0;
 	bitInfo->bmiHeader.biYPelsPerMeter = 0;
 
-
 	//그레이스케일 인경우 팔레트가 필요
 	if (bpp == 8)
 	{
@@ -479,7 +433,6 @@ void CMFCwebnautesDlg::OnTimer(UINT_PTR nIDEvent)
 			palette[i].rgbReserved = 0;
 		}
 	}
-
 
 	// Image is bigger or smaller than into destination rectangle
 	// we use stretch in full rect
@@ -514,7 +467,6 @@ void CMFCwebnautesDlg::OnTimer(UINT_PTR nIDEvent)
 			imgx, imgy, imgWidth, imgHeight,
 			mat_temp.data, bitInfo, DIB_RGB_COLORS, SRCCOPY);
 	}
-
 
 	HDC dc = ::GetDC(m_picture.m_hWnd);
 	cimage_mfc.BitBlt(dc, 0, 0);
@@ -562,8 +514,6 @@ void CMFCwebnautesDlg::OnBnClickedOk()
 void CMFCwebnautesDlg::OnBnClickedButton1()
 {
 	// TODO: 여기에 컨트롤 알림 처리기 코드를 추가합니다.
-	//MD_CONFIG dlg;
-	//dlg.DoModal(); 
 	dlg = new MD_CONFIG(dlg);
 	dlg->Create(IDD_DIALOG1);
 	dlg->CenterWindow();
@@ -584,7 +534,7 @@ void CMFCwebnautesDlg::OnBnClickedButton3()
 	cdlg->Create(IDD_DIALOG2);
 	cdlg->CenterWindow();
 	cdlg->ShowWindow(SW_SHOWNORMAL);
-	//AfxMessageBox(FolderPath);
+	//AfxMessageBox(FolderPath); //폴더 경로가 잘 뜨는지 확인하는 용도
 }
 
 
@@ -592,7 +542,7 @@ void CMFCwebnautesDlg::OnEnChangeEdit1()
 {
 	// TODO:  RICHEDIT 컨트롤인 경우, 이 컨트롤은
 	// CDialogEx::OnInitDialog() 함수를 재지정 
-	//하고 마스크에 OR 연산하여 설정된 ENM_CHANGE 플래그를 지정하여 CRichEditCtrl().SetEventMask()를 호출하지 않으면
+	// 하고 마스크에 OR 연산하여 설정된 ENM_CHANGE 플래그를 지정하여 CRichEditCtrl().SetEventMask()를 호출하지 않으면
 	// 이 알림 메시지를 보내지 않습니다.
 
 	// TODO:  여기에 컨트롤 알림 처리기 코드를 추가합니다.
@@ -607,7 +557,6 @@ void CMFCwebnautesDlg::OnLvnItemchangedList1(NMHDR* pNMHDR, LRESULT* pResult)
 
 }
 
-////////////////////////////////////////////////////////////////////////////////
 void CMFCwebnautesDlg::ShowThumbnailList() {
 	// nIndex 및 image list 초기화
 	nIndex = 0;
@@ -619,14 +568,14 @@ void CMFCwebnautesDlg::ShowThumbnailList() {
 
 	// 캡쳐 파일 찾기
 	CFileFind finder;
-	CString strWildCard(CapPath);
-	strWildCard += "\\";
-	strWildCard += currentDate();
-	strWildCard += "\\image_*.jpg";
+	CString imageStrPath(CapPath);
+	imageStrPath += "\\";
+	imageStrPath += currentDate();
+	imageStrPath += "\\image_*.jpg";
 	Mat image;
 	vector<CString> strFileList;
 
-	BOOL bWorking = finder.FindFile(strWildCard);
+	BOOL bWorking = finder.FindFile(imageStrPath);
 	while (bWorking) {
 		bWorking = finder.FindNextFile();
 
@@ -642,21 +591,22 @@ void CMFCwebnautesDlg::ShowThumbnailList() {
 	CString tempStr(CapPath);
 	tempStr += "\\";
 	tempStr += currentDate();
+
 	// 오름차순인 파일 리스트를 내림차순으로 변경
 	reverse(strFileList.begin(), strFileList.end());
 	for (unsigned int i = 0; i < strFileList.size(); i++) {
 		// 10개까지만 보여주기
 		if (i >= 10)
 			break;
+
 		CString temp = tempStr + "\\" + strFileList[i];
 		CT2CA pszString(temp);
 		std::string strPath(pszString);
+
 		image = imread(strPath, IMREAD_UNCHANGED);
-		//image = imread((char*)(LPCTSTR)(temp), IMREAD_UNCHANGED);
-		//image = cvLoadImage(CT2A(CapPath + "\\" + strFileList[i]), CV_LOAD_IMAGE_UNCHANGED); // load image
 		AddThumbnailList(strFileList[i], image);
+
 		if (!(image.empty())) image.release();
-		//if (image != NULL) cvReleaseImage(&image); // thumbnail release
 	}
 }
 
@@ -709,7 +659,6 @@ HBITMAP CMFCwebnautesDlg::mat2bmp(cv::Mat* image)
 void CMFCwebnautesDlg::AddThumbnailList(CString FileName, Mat image) {
 	// thumbnail 만들기
 	Mat thumb = Mat(Size(THUMBNAIL_WIDTH, THUMBNAIL_HEIGHT), CV_8UC3);
-		//cvCreateImage(cvSize(THUMBNAIL_WIDTH, THUMBNAIL_HEIGHT), IPL_DEPTH_8U, 3);
 	resize(image, thumb, Size(THUMBNAIL_WIDTH, THUMBNAIL_HEIGHT), 0, 0, INTER_LINEAR);
 
 	// 리스트에 추가
@@ -717,7 +666,6 @@ void CMFCwebnautesDlg::AddThumbnailList(CString FileName, Mat image) {
 
 	// thumbnail release
 	if (!(thumb.empty())) thumb.release();
-	//if (thumb != NULL) cvReleaseImage(&thumb);
 }
 
 void CMFCwebnautesDlg::InsertList(Mat thumb, CString FileName) {
@@ -738,7 +686,6 @@ void CMFCwebnautesDlg::InsertList(Mat thumb, CString FileName) {
 	// thumbnail 그리기
 	CBitmap ThumbBitmap;
 	HBITMAP bm = mat2bmp(&thumb);
-	//HBITMAP bm = iplimage2hbitmap(thumb);
 	ThumbBitmap.Attach(bm);
 	mImageList.Replace(nIndex, &ThumbBitmap, NULL);
 	m_piclist.RedrawItems(nIndex, nIndex);
@@ -752,12 +699,12 @@ void CMFCwebnautesDlg::InsertList(Mat thumb, CString FileName) {
 void CMFCwebnautesDlg::removeAllImages() {
 	// 캡쳐 파일 찾기
 	CFileFind finder;
-	CString strWildCard(CapPath);
-	strWildCard += "\\";
-	strWildCard += currentDate();
-	strWildCard += "\\image_*.jpg";
+	CString imageStrPath(CapPath);
+	imageStrPath += "\\";
+	imageStrPath += currentDate();
+	imageStrPath += "\\image_*.jpg";
 
-	BOOL bWorking = finder.FindFile(strWildCard);
+	BOOL bWorking = finder.FindFile(imageStrPath);
 	while (bWorking) {
 		bWorking = finder.FindNextFile();
 
@@ -780,7 +727,7 @@ void CMFCwebnautesDlg::OnNMDblclkList1(NMHDR* pNMHDR, LRESULT* pResult)
 	LPNMITEMACTIVATE pNMItemActivate = reinterpret_cast<LPNMITEMACTIVATE>(pNMHDR);
 	// TODO: 여기에 컨트롤 알림 처리기 코드를 추가합니다.
 	if (pNMItemActivate->iItem != -1) {
-		// 그림파일 열기
+		// 이미지 파일 열기
 		CString tempPath = (CapPath + "\\" + currentDate() + "\\");
 		CString strFullPath = tempPath + m_piclist.GetItemText(pNMItemActivate->iItem, 0);
 
