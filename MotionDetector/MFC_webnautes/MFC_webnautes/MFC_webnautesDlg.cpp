@@ -33,7 +33,7 @@ VideoCapture* capture;
 vector<vector<Point> > cnts;
 Mat frame, gray, frameDelta, thresh, firstFrame;
 Mat mat_frame;
-CString CapPath = _T("C:\\MD_Capture");
+CString CapPath;
 CString selFolderDate = _T("");
 CString FolderPath = _T("");
 CImage cimage_mfc;
@@ -46,6 +46,35 @@ int sensor[11] = { 3000, 2800, 2600, 2400, 2200, 2000, 1800, 1600, 1400, 1200 };
 #define new DEBUG_NEW
 #endif
 
+BOOL isIniFile() {
+	CString cBuf = _T("");
+	GetPrivateProfileString(_T("MotionDetector"), _T("CapPath"), _T("-"), (LPWSTR)(LPCWSTR)cBuf, 256, _T(".\\semiMD.ini"));
+
+	if (cBuf == "-") {
+		return false;
+	}
+	else {
+		return true;
+	}
+}
+
+void iniWrite(CString cBuf) {
+	// Write 
+	WritePrivateProfileString(_T("MotionDetector"), _T("CapPath"), cBuf, _T(".\\semiMD.ini"));
+}
+
+void iniRead() {
+	// Read 
+	CString Path = _T("");
+	GetPrivateProfileString(_T("MotionDetector"), _T("CapPath"), _T("-"), (LPWSTR)(LPCWSTR)Path, 256, _T(".\\semiMD.ini"));
+	CapPath.Format(_T("%s"), Path);
+	//CapPath = (CString)Path;
+}
+
+//void iniRead(CString cBuf) {
+//	// Read 
+//	GetPrivateProfileString(L"MotionDetector", L"CapPath", L"-", (LPWSTR)(LPCWSTR)cBuf, 256, L".\\semiMD.ini");
+//}
 
 BOOL myUtil_CheckDir(CString sDirName)
 {
@@ -269,6 +298,15 @@ BOOL CMFCwebnautesDlg::OnInitDialog()
 		}
 	}
 
+	//ini file 존재 여부 확인 및 열기 또는 쓰기
+	if (isIniFile()) {
+		iniRead();
+	}
+	else {
+		iniWrite(_T("C:\\MD_Capture"));
+		iniRead();
+	}
+
 	//감지 등급 Slide Control 설정
 	m_sld.SetRange(0, 10); // 최소 최대 값
 	m_sld.SetPos(5); // 현재 위치
@@ -285,7 +323,9 @@ BOOL CMFCwebnautesDlg::OnInitDialog()
 	myUtil_CheckDir(CapPath);
 
 	//폴더 선택 저장 변수
-	FolderPath = _T("C:\\MD_Capture\\" + currentDate());
+	FolderPath = CapPath;
+	FolderPath += "\\";
+	FolderPath += currentDate();
 
 	//imagelist 생성 및 list control과 연결
 	mImageList.Create(64, 64, ILC_COLOR8 | ILC_MASK, 8, 8);

@@ -53,6 +53,10 @@ void MD_CONFIG::OnBnClickedButton1()
 
 	extern CString CapPath;
 	CapPath.Format(_T("%s"), szBuffer);
+
+	// Write 
+	WritePrivateProfileString(_T("MotionDetector"), _T("CapPath"), szBuffer, _T(".\\semiMD.ini"));
+
 	AfxMessageBox(CapPath);
 }
 
