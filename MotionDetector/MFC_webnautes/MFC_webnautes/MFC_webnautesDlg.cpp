@@ -343,6 +343,10 @@ void CMFCwebnautesDlg::OnSysCommand(UINT nID, LPARAM lParam)
 	{
 		CAboutDlg dlgAbout;
 		dlgAbout.DoModal();
+	}else if (nID == SC_CLOSE)
+	{
+		//종료버튼 눌릴 시
+		AfxGetMainWnd()->SendMessage(WM_COMMAND, ID_APP_EXIT, NULL);
 	}
 	else
 	{
@@ -558,12 +562,17 @@ void CMFCwebnautesDlg::OnBnClickedButton1()
 	dlg->Create(IDD_DIALOG1);
 	dlg->CenterWindow();
 	dlg->ShowWindow(SW_SHOWNORMAL);
+	iniRead();
 }
 
 
 void CMFCwebnautesDlg::OnBnClickedButton2()
 {
 	// TODO: 여기에 컨트롤 알림 처리기 코드를 추가합니다.
+	//폴더 선택 저장 변수
+	FolderPath = CapPath;
+	FolderPath += "\\";
+	FolderPath += currentDate();
 	ShellExecute(NULL, _T("open"), FolderPath, NULL, NULL, SW_SHOW);
 }
 

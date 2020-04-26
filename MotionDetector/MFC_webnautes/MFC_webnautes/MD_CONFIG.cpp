@@ -1,11 +1,9 @@
 ﻿// MD_CONFIG.cpp: 구현 파일
 //
-
 #include "pch.h"
 #include "MFC_webnautes.h"
 #include "MD_CONFIG.h"
 #include "afxdialogex.h"
-
 
 // MD_CONFIG 대화 상자
 
@@ -56,6 +54,7 @@ void MD_CONFIG::OnBnClickedButton1()
 
 	// Write 
 	WritePrivateProfileString(_T("MotionDetector"), _T("CapPath"), szBuffer, _T(".\\semiMD.ini"));
+
 
 	AfxMessageBox(CapPath);
 }
