@@ -39,10 +39,11 @@ CString selFolderDate = _T("");
 CString FolderPath = _T("");
 CImage cimage_mfc;
 CImage m_image;
-int setContour = 5;
+int setContour = 4;
 int insert = 0;
 //int sensor[11] = { 3000, 2800, 2600, 2400, 2200, 2000, 1800, 1600, 1400, 1200 };
-int sensor[10] = { 20000, 15000, 10000, 7000, 2500, 2000, 1600, 1200, 800, 400 };
+//int sensor[10] = { 20000, 15000, 10000, 7000, 2500, 2000, 1600, 1200, 800, 400 };
+int sensor[10] = { 8000, 7000, 6000, 4500, 2000, 1700, 1500, 1200, 800, 400 };
 IplImage* loadImage;
 char* curtime;
 bool isRunning = true;
@@ -187,7 +188,7 @@ void CMFCwebnautesDlg::capPicture(Mat image) {
 		insert++;
 		ShowThumbnailList();
 	}
-	else if (insert > 50) {
+	else if (insert > 150) {
 		CString tempDate = currentDate();
 		CString curDateTime = currentDateTime();
 		curDateTime.Delete(0, 2);
@@ -234,7 +235,8 @@ void CMFCwebnautesDlg::Running() {
 		Mat sendNowImage = frame;
 		curtime = curTime();
 		CvFont font;
-		cvInitFont(&font, CV_FONT_HERSHEY_SIMPLEX, 0.5, 0.5, 0, 1, 1);
+		//cvInitFont(&font, CV_FONT_HERSHEY_SIMPLEX, 0.5, 0.5, 0, 1, 1);
+		cvInitFont(&font, CV_FONT_HERSHEY_SIMPLEX, 1.5, 1.5, 0, 1, 1);
 		loadImage = new IplImage(sendNowImage);
 		cvPutText(loadImage, curtime, cvPoint(4, loadImage->height - 10), &font, CV_RGB(255, 255, 255));
 		//NowImage(frame);
@@ -812,6 +814,7 @@ void CMFCwebnautesDlg::OnNMCustomdrawSlider1(NMHDR* pNMHDR, LRESULT* pResult)
 	//감지 등급 Edit Box 설정
 	int iPos = m_sld.GetPos();
 	setContour = iPos-1;
+	insert = 0;
 	CString sPos;
 	sPos.Format(_T("%d"), iPos);
 	m_cb.SetCurSel(iPos-1);
@@ -886,6 +889,7 @@ void CMFCwebnautesDlg::OnEnChangeEdit1()
 
 	int nowPos = _ttoi(strRatio);
 	setContour = nowPos - 1;
+	insert = 0;
 	m_sld.SetPos(nowPos);
 }
 
@@ -1166,6 +1170,7 @@ void CMFCwebnautesDlg::OnCbnSelchangeCombo2()
 
 	this->m_cb.GetLBText(this->m_cb.GetCurSel(), temp);
 	int nowPos = _ttoi(temp);
-	setContour = nowPos;
+	setContour = nowPos - 1;
+	insert = 0;
 	m_sld.SetPos(nowPos);
 }
