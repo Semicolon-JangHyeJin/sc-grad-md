@@ -34,6 +34,7 @@ VideoCapture* capture;
 vector<vector<Point> > cnts;
 Mat frame, gray, frameDelta, thresh, firstFrame;
 Mat mat_frame;
+Mat tframe;
 CString CapPath;
 CString selFolderDate = _T("");
 CString FolderPath = _T("");
@@ -43,15 +44,22 @@ int setContour = 4;
 int insert = 0;
 //int sensor[11] = { 3000, 2800, 2600, 2400, 2200, 2000, 1800, 1600, 1400, 1200 };
 //int sensor[10] = { 20000, 15000, 10000, 7000, 2500, 2000, 1600, 1200, 800, 400 };
-int sensor[10] = { 8000, 7000, 6000, 4500, 2000, 1700, 1500, 1200, 800, 400 };
+int sensor[10] = { 10000, 8500, 7000, 5000, 2200, 1800, 1600, 1300, 800, 400 };
+// 20200710 detect count array 추가해보기 150 sensorCount[setContour]
+int sensorCount[10] = { 230, 210, 200, 190, 175, 150, 120, 100, 90, 75 };
 IplImage* loadImage;
 char* curtime;
+char* timecuR;
+CvFont font;
 bool isRunning = true;
 CString serverIP = _T("");
 CString serverPath = _T("");
 CString serverID = _T("");
 CString serverPW = _T("");
-Scalar brown(42, 42, 165);
+Scalar brown(255, 255, 255);
+RECT mainSize;
+RECT subSize;
+CFont cFont;
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -183,12 +191,14 @@ void CMFCwebnautesDlg::capPicture(Mat image) {
 		CString tempDir = CapPath + "\\" + tempDate;
 		myUtil_CheckDir(tempDir);
 		Mat resize;
-		cv::resize(image, resize, cv::Size(1024, 768));
-		imwrite(savefile, resize);        // img를 파일로 저장한다.
+		//cv::resize(image, resize, cv::Size(1024, 768));mainSize.right
+		cv::resize(image, resize, cv::Size(mainSize.right, mainSize.bottom));
+		//putText(resize, curTime(), Point(4, mainSize.bottom - 4), CV_FONT_HERSHEY_SIMPLEX, 2, brown, 3.5);
+		imwrite(savefile, resize/* + cv::Scalar(45, 45, 45)*/);        // img를 파일로 저장한다.
 		insert++;
 		ShowThumbnailList();
 	}
-	else if (insert > 150) {
+	else if (insert > sensorCount[setContour]) {
 		CString tempDate = currentDate();
 		CString curDateTime = currentDateTime();
 		curDateTime.Delete(0, 2);
@@ -197,8 +207,10 @@ void CMFCwebnautesDlg::capPicture(Mat image) {
 		CString tempDir = CapPath + "\\" + tempDate;
 		myUtil_CheckDir(tempDir);
 		Mat resize;
-		cv::resize(image, resize, cv::Size(1024, 768));
-		imwrite(savefile, resize);        // img를 파일로 저장한다.
+		//cv::resize(image, resize, cv::Size(1024, 768));
+		cv::resize(image, resize, cv::Size(mainSize.right, mainSize.bottom));
+		//putText(resize, curTime(), Point(4, mainSize.bottom - 4), CV_FONT_HERSHEY_SIMPLEX, 2, brown, 3.5);
+		imwrite(savefile, resize/* + cv::Scalar(45, 45, 45)*/);        // img를 파일로 저장한다.
 		insert = 0;
 		ShowThumbnailList();
 	}
@@ -232,13 +244,13 @@ void CMFCwebnautesDlg::Running() {
 
 	while (capture->read(frame)) {
 
-		Mat sendNowImage = frame;
+		//Mat sendNowImage = frame + cv::Scalar(60, 60, 60);
 		curtime = curTime();
-		CvFont font;
 		//cvInitFont(&font, CV_FONT_HERSHEY_SIMPLEX, 0.5, 0.5, 0, 1, 1);
-		cvInitFont(&font, CV_FONT_HERSHEY_SIMPLEX, 1.5, 1.5, 0, 1, 1);
-		loadImage = new IplImage(sendNowImage);
-		cvPutText(loadImage, curtime, cvPoint(4, loadImage->height - 10), &font, CV_RGB(255, 255, 255));
+		//timecuR = curTime();
+
+		loadImage = new IplImage(mat_frame);
+		//cvPutText(loadImage, curtime, cvPoint(4, loadImage->height - 10), &font, CV_RGB(255, 255, 255));
 		//NowImage(frame);
 
 		//grayscale로 변환
@@ -257,7 +269,7 @@ void CMFCwebnautesDlg::Running() {
 			if (contourArea(cnts[i]) < sensor[setContour]) {
 				continue;
 			}
-			capPicture(frame);
+			capPicture(mat_frame);
 		}
 
 
@@ -381,13 +393,14 @@ BOOL CMFCwebnautesDlg::OnInitDialog()
 	SetIcon(m_hIcon, TRUE);			// 큰 아이콘을 설정합니다.
 	SetIcon(m_hIcon, FALSE);		// 작은 아이콘을 설정합니다.
 
+
 	// TODO: 여기에 추가 초기화 작업을 추가합니다.
 
 	//카메라 연결
-	capture = new VideoCapture(1);
+	capture = new VideoCapture(CAP_DSHOW);
 	if (!capture->isOpened())
 	{
-		capture = new VideoCapture(0);
+		capture = new VideoCapture(CAP_DSHOW);
 		if (!capture->isOpened()) {
 			isRunning = false;
 			MessageBox(_T("캠을 열수 없습니다. \n"));
@@ -396,7 +409,11 @@ BOOL CMFCwebnautesDlg::OnInitDialog()
 	capture->read(frame);
 	Mat sendNowImage = frame;
 	loadImage = new IplImage(sendNowImage);
-
+	//3840 * 2160 16:9
+	capture->set(CAP_PROP_FRAME_WIDTH, 3664);
+	capture->set(CAP_PROP_FRAME_HEIGHT, 2372);
+	//capture->set(CAP_PROP_FPS, 60);
+	cvInitFont(&font, CV_FONT_HERSHEY_SIMPLEX, 2, 2, 0, 3.5, 2);
 	//ini file 존재 여부 확인 및 열기 또는 쓰기
 	if (isIniFile()) {
 		iniRead();
@@ -413,8 +430,8 @@ BOOL CMFCwebnautesDlg::OnInitDialog()
 	m_sld.SetPageSize(1); // PgUp, PgDn으로 움직일 때 사이즈
 
 	//감지 등급 Edit Box 설정
-	int iPos = m_sld.GetPos(); 
-	m_cb.SetCurSel(iPos-1);
+	int iPos = m_sld.GetPos();
+	m_cb.SetCurSel(iPos - 1);
 	m_cb.AddString(TEXT("1"));
 	m_cb.AddString(TEXT("2"));
 	m_cb.AddString(TEXT("3"));
@@ -430,6 +447,9 @@ BOOL CMFCwebnautesDlg::OnInitDialog()
 	CString sPos;
 	sPos.Format(_T("%d"), iPos);*/
 	//m_ed.SetWindowText(sPos);
+
+	m_picture.GetClientRect(&mainSize);
+	m_picture2.GetClientRect(&subSize);
 
 	//이미지 저장 폴더 있는지 확인
 	myUtil_CheckDir(CapPath);
@@ -451,10 +471,10 @@ BOOL CMFCwebnautesDlg::OnInitDialog()
 		SetTimer(1400, 60000, NULL);
 	}
 	//nas->StartFileSend(sendFileDate());       // 한달후 한번 호출하기를 바라는 함수..
-//	AfxMessageBox(sendFileDate());
+//	AfxMessageBox(sendFileDate());	
 	//imagelist 생성 및 list control과 연결
-	//이미지리스트 크기 변경하려고 64에서 128으로 변경
-	mImageList.Create(192, 144, ILC_COLOR8 | ILC_MASK, 8, 8);
+	//이미지리스트 크기 변경하려고 64에서 128으로 변경 768 432 / 192 144
+	mImageList.Create(240, 110, ILC_COLOR8 | ILC_MASK, 8, 8);
 	m_piclist.SetImageList(&mImageList, LVSIL_NORMAL);
 	ShowThumbnailList();
 
@@ -464,7 +484,7 @@ BOOL CMFCwebnautesDlg::OnInitDialog()
 	m_CalView = FALSE;
 
 	//Running();
-	
+
 	/*AfxMessageBox(capture->get(CAP_PROP_FRAME_HEIGHT));*/
 	SetTimer(1000, 1000 / 15, NULL);
 
@@ -485,6 +505,7 @@ void CMFCwebnautesDlg::OnSysCommand(UINT nID, LPARAM lParam)
 		capture->release();
 		destroyAllWindows();
 		AfxGetMainWnd()->SendMessage(WM_COMMAND, ID_APP_EXIT, NULL);
+		::SendMessage(GetSafeHwnd(), WM_CLOSE, NULL, NULL);
 	}
 	else
 	{
@@ -548,19 +569,28 @@ void CMFCwebnautesDlg::OnDestroy()
 
 void CMFCwebnautesDlg::OnTimer(UINT_PTR nIDEvent)
 {
+	
 	switch (nIDEvent)
 	{
 	case 1000:
-
+		//curtime = curTime();
 		if (isImageClick) {
+
 			// TODO: 여기에 메시지 처리기 코드를 추가 및/또는 기본값을 호출합니다.
-	//sleep(3);
+			//Sleep(50);
 
-	//mat_frame가 입력 이미지입니다.
-			capture->read(mat_frame);
+			//mat_frame가 입력 이미지입니다.
 
+			capture->read(tframe);
+			//mat_frame = tframe + cv::Scalar(10, 10, 10);
+			cv::resize(tframe, mat_frame, cv::Size(mainSize.right, mainSize.bottom));
+			//putText(mat_frame, curtime, Point(4, mainSize.bottom - 4), CV_FONT_HERSHEY_SIMPLEX, 2, brown, 3.5);
+			//cv::resize(mat_frame, mat_frame, cv::Size(1024, 768));
+			curtime = curTime();
+			putText(mat_frame, curtime, Point(4, mainSize.bottom - 4), CV_FONT_HERSHEY_SIMPLEX, 2, brown, 3.5);
 
 			//이곳에 OpenCV 함수들을 적용합니다.
+			//cvtColor(mat_frame, mat_frame, COLOR_BGR2GRAY);
 
 			//화면에 보여주기 위한 처리입니다.
 			int bpp = 8 * mat_frame.elemSize();
@@ -580,6 +610,8 @@ void CMFCwebnautesDlg::OnTimer(UINT_PTR nIDEvent)
 			{
 				border = 4 - (mat_frame.cols % 4);
 			}
+
+
 
 			Mat mat_temp;
 			if (border > 0 || mat_frame.isContinuous() == false)
@@ -596,7 +628,9 @@ void CMFCwebnautesDlg::OnTimer(UINT_PTR nIDEvent)
 			m_picture.GetClientRect(&r);
 			cv::Size winSize(r.right, r.bottom);
 
-			cimage_mfc.Create(winSize.width, winSize.height, 24);
+			//cimage_mfc.Create(winSize.width, winSize.height, 24);
+			cimage_mfc.Create(winSize.width, winSize.height, 32);
+
 
 			BITMAPINFO* bitInfo = (BITMAPINFO*)malloc(sizeof(BITMAPINFO) + 256 * sizeof(RGBQUAD));
 			bitInfo->bmiHeader.biBitCount = bpp;
@@ -611,6 +645,7 @@ void CMFCwebnautesDlg::OnTimer(UINT_PTR nIDEvent)
 			bitInfo->bmiHeader.biXPelsPerMeter = 0;
 			bitInfo->bmiHeader.biYPelsPerMeter = 0;
 
+
 			//그레이스케일 인경우 팔레트가 필요
 			if (bpp == 8)
 			{
@@ -621,6 +656,7 @@ void CMFCwebnautesDlg::OnTimer(UINT_PTR nIDEvent)
 					palette[i].rgbReserved = 0;
 				}
 			}
+
 
 			// Image is bigger or smaller than into destination rectangle
 			// we use stretch in full rect
@@ -657,34 +693,32 @@ void CMFCwebnautesDlg::OnTimer(UINT_PTR nIDEvent)
 			}
 
 
-			/*char text[50];
-			CvFont font;
-
-			sprintf(text, "Time=", curTime());
-			cvInitFont(&font, CV_FONT_HERSHEY_SIMPLEX, 0.5, 0.5, 0, 1, 1);
-
-			cvPutText(m_picture.m_hWnd, text, cvPoint(10, 100), &font, CV_RGB(255, 255, 255));*/
-
 			HDC dc = ::GetDC(m_picture.m_hWnd);
-
 			cimage_mfc.BitBlt(dc, 0, 0);
+
 
 			::ReleaseDC(m_picture.m_hWnd, dc);
 
 			cimage_mfc.ReleaseDC();
 			cimage_mfc.Destroy();
 
+
 			CDialogEx::OnTimer(nIDEvent);
 		}
 		else {
 			// TODO: 여기에 메시지 처리기 코드를 추가 및/또는 기본값을 호출합니다.
-		//sleep(3);
+			//Sleep(50);
 
-		//mat_frame가 입력 이미지입니다.
-			capture->read(mat_frame);
+			//mat_frame가 입력 이미지입니다.
+			capture->read(tframe);
+			//mat_frame = tframe/* + cv::Scalar(45, 45, 45)*/;
+			cv::resize(tframe, mat_frame, cv::Size(subSize.right, subSize.bottom));
+			//cv::resize(mat_frame, mat_frame, cv::Size(1024, 768));
+
 
 
 			//이곳에 OpenCV 함수들을 적용합니다.
+			/*cvtColor(mat_frame, mat_frame, COLOR_BGR2GRAY);*/
 
 			//화면에 보여주기 위한 처리입니다.
 			int bpp = 8 * mat_frame.elemSize();
@@ -705,6 +739,8 @@ void CMFCwebnautesDlg::OnTimer(UINT_PTR nIDEvent)
 				border = 4 - (mat_frame.cols % 4);
 			}
 
+
+
 			Mat mat_temp;
 			if (border > 0 || mat_frame.isContinuous() == false)
 			{
@@ -716,11 +752,14 @@ void CMFCwebnautesDlg::OnTimer(UINT_PTR nIDEvent)
 				mat_temp = mat_frame;
 			}
 
+
 			RECT r;
 			m_picture2.GetClientRect(&r);
 			cv::Size winSize(r.right, r.bottom);
 
-			cimage_mfc.Create(winSize.width, winSize.height, 24);
+			//cimage_mfc.Create(winSize.width, winSize.height, 24);
+			cimage_mfc.Create(winSize.width, winSize.height, 32);
+
 
 			BITMAPINFO* bitInfo = (BITMAPINFO*)malloc(sizeof(BITMAPINFO) + 256 * sizeof(RGBQUAD));
 			bitInfo->bmiHeader.biBitCount = bpp;
@@ -735,6 +774,7 @@ void CMFCwebnautesDlg::OnTimer(UINT_PTR nIDEvent)
 			bitInfo->bmiHeader.biXPelsPerMeter = 0;
 			bitInfo->bmiHeader.biYPelsPerMeter = 0;
 
+
 			//그레이스케일 인경우 팔레트가 필요
 			if (bpp == 8)
 			{
@@ -745,6 +785,7 @@ void CMFCwebnautesDlg::OnTimer(UINT_PTR nIDEvent)
 					palette[i].rgbReserved = 0;
 				}
 			}
+
 
 			// Image is bigger or smaller than into destination rectangle
 			// we use stretch in full rect
@@ -779,14 +820,17 @@ void CMFCwebnautesDlg::OnTimer(UINT_PTR nIDEvent)
 					imgx, imgy, imgWidth, imgHeight,
 					mat_temp.data, bitInfo, DIB_RGB_COLORS, SRCCOPY);
 			}
-			HDC dc = ::GetDC(m_picture2.m_hWnd);
 
+
+			HDC dc = ::GetDC(m_picture2.m_hWnd);
 			cimage_mfc.BitBlt(dc, 0, 0);
+
 
 			::ReleaseDC(m_picture2.m_hWnd, dc);
 
 			cimage_mfc.ReleaseDC();
 			cimage_mfc.Destroy();
+
 
 			CDialogEx::OnTimer(nIDEvent);
 		}
@@ -813,11 +857,11 @@ void CMFCwebnautesDlg::OnNMCustomdrawSlider1(NMHDR* pNMHDR, LRESULT* pResult)
 	*pResult = 0;
 	//감지 등급 Edit Box 설정
 	int iPos = m_sld.GetPos();
-	setContour = iPos-1;
+	setContour = iPos - 1;
 	insert = 0;
 	CString sPos;
 	sPos.Format(_T("%d"), iPos);
-	m_cb.SetCurSel(iPos-1);
+	m_cb.SetCurSel(iPos - 1);
 	//m_ed.SetWindowText(sPos);
 }
 
@@ -845,7 +889,7 @@ void CMFCwebnautesDlg::OnBnClickedButton1()
 {
 	// TODO: 여기에 컨트롤 알림 처리기 코드를 추가합니다.
 	//dlg = new MD_CONFIG(dlg);
-	MD_CONFIG *dlg = new MD_CONFIG;
+	MD_CONFIG* dlg = new MD_CONFIG;
 
 	dlg->Create(IDD_DIALOG1);
 	dlg->CenterWindow();
@@ -868,7 +912,7 @@ void CMFCwebnautesDlg::OnBnClickedButton3()
 	// TODO: 여기에 컨트롤 알림 처리기 코드를 추가합니다.
 	//MD_Calendar cdlg;
 	//cdlg.DoModal();
-	MD_Calendar *cdlg = new MD_Calendar;
+	MD_Calendar* cdlg = new MD_Calendar;
 	cdlg->Create(IDD_DIALOG2);
 	cdlg->CenterWindow();
 	cdlg->ShowWindow(SW_SHOWNORMAL);
@@ -1003,8 +1047,8 @@ HBITMAP CMFCwebnautesDlg::mat2bmp(cv::Mat* image)
 
 void CMFCwebnautesDlg::AddThumbnailList(CString FileName, Mat image) {
 	// thumbnail 만들기
-	Mat thumb = Mat(Size(THUMBNAIL_WIDTH, THUMBNAIL_HEIGHT), CV_8UC3);
-	resize(image, thumb, Size(THUMBNAIL_WIDTH, THUMBNAIL_HEIGHT), 0, 0, INTER_LINEAR);
+	Mat thumb;// = Mat(Size(THUMBNAIL_WIDTH, THUMBNAIL_HEIGHT), CV_8UC3);
+	resize(image, thumb, Size(THUMBNAIL_WIDTH, THUMBNAIL_HEIGHT)/*, 0, 0,INTER_LINEAR*/);
 
 	// 리스트에 추가
 	InsertList(thumb, FileName);

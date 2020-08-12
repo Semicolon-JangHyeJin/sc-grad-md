@@ -115,4 +115,5 @@ public:
 	ImageStreamingServer* sThread;
 	afx_msg void OnCbnSelchangeCombo2();
 	CComboBox m_cb;
+	CStatic m_pic3;
 };

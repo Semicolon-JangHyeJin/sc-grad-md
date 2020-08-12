@@ -291,8 +291,8 @@ void ImageStreamingServer::sendImageHeader(SOCKET client_sock, BOOL mode)
 void ImageStreamingServer::sendImage(SOCKET client_sock, IplImage* sendImage, BOOL mode)
 {
 	// 메모리에서 IplImage 를 jpeg stream 으로 변환
-	vector<int> params = vector<int>(2);
-	vector<unsigned char> imgbuf(sendImage->imageSize);
+	vector<int> params(2);
+	vector<uchar> imgbuf(sendImage->imageSize);
 	/*params.push_back(IMWRITE_JPEG_QUALITY);
 	params.push_back(95);*/
 	params[0] = IMWRITE_JPEG_QUALITY;
