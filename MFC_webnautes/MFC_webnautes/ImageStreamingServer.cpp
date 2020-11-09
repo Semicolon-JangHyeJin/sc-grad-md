@@ -179,7 +179,7 @@ UINT ImageStreamingServer::Client_Thread(LPVOID arg)
 
 	// client의 GET 요청 받기
 	if ((retval = recv(client_sock, (LPSTR)sThread->buf, BUF_SIZE, 0)) == SOCKET_ERROR) {
-		AfxMessageBox(L"recv() 에러");
+		//AfxMessageBox(L"recv() 에러");
 		return 0;
 	}
 
